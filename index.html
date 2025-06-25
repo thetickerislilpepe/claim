@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>LilPepe Airdrop</title>
     <meta name="description" content="Claim your LilPepe airdrop on Solana! Connect your Phantom Wallet and join the Pepe revolution.">
     <meta name="keywords" content="LilPepe, airdrop, memecoin, cryptocurrency, Solana, Phantom Wallet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         * {
             margin: 0;
@@ -29,7 +29,7 @@
         header {
             text-align: center;
             padding: 60px 20px;
-            background: url('https://images.unsplash.com/photo-1612833602644-0a3d0b9a7a0f') no-repeat center/cover;
+            background: url('https://images.unsplash.com/photo-1612833602644-0a3d0b9a7a0f?auto=format&fit=crop&w=800&q=60') no-repeat center/cover;
             width: 100%;
             border-bottom: 8px solid #ffd700;
             animation: fadeInDown 1s ease-in-out;
@@ -191,7 +191,7 @@
 </head>
 <body>
     <header>
-        <img src="images/lilpepe.png" alt="LilPepe Logo" class="hero-image" onerror="this.src='https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/8e5b3e57-d8b4-4f7d-9b62-9a9a6e9f2f1d/dg0z0m9-6b1a2e8e-1e7d-4b7e-9f1c-5a5e8b1b1e2b.png/v1/fill/w_512,h_512,strp/pepe_the_frog_meme_token_by_cryptopepe_dg0z0m9-fullview.png'">
+        <img src="images/lilpepe.png" alt="LilPepe Logo" class="hero-image" loading="lazy" onerror="this.src='https://via.placeholder.com/250?text=LilPepe'">
         <h1 class="animate__animated animate__fadeIn">LilPepe Airdrop</h1>
         <p class="animate__animated animate__fadeIn">Claim your free LilPepe tokens on Solana! Connect your Phantom Wallet to join the revolution.</p>
     </header>
@@ -228,7 +228,7 @@
     <!-- Notification Element -->
     <div id="notification" class="notification"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="scripts/scripts.js"></script>
 </body>
