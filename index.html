@@ -3,91 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Fake Meme Coin</title>
-    <meta name="description" content="Fake is a fun and safe meme coin. Connect your Phantom Wallet and enjoy our features!">
-    <meta name="keywords" content="Fake, meme coin, cryptocurrency, Solana, Phantom Wallet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>LilPepe Coin</title>
+    <meta name="description" content="LilPepe is a fun and vibrant memecoin on Solana. Connect your Phantom Wallet and join the Pepe community!">
+    <meta name="keywords" content="LilPepe, memecoin, cryptocurrency, Solana, Phantom Wallet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6b48ff, #00ddeb);
+            color: #fff;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            padding: 50px 20px;
+            background: url('https://images.unsplash.com/photo-1612833602644-0a3d0b9a7a0f') no-repeat center/cover;
+            width: 100%;
+            border-bottom: 5px solid #ffd700;
+            animation: fadeInDown 1s ease-in-out;
         }
 
         h1 {
-            font-size: 2.5rem;
-            color: #ff6f61;
-            margin: 0;
+            font-size: 3.5rem;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
         }
 
         p {
-            font-size: 1.2rem;
-            color: #666;
+            font-size: 1.3rem;
+            color: #fff;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .hero-image {
+            max-width: 200px;
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: bounce 2s infinite;
         }
 
         .button-container {
-            margin-top: 20px;
+            margin: 30px 0;
+            text-align: center;
         }
 
         .button {
-            background-color: #ff6f61;
-            color: #fff;
-            padding: 10px 20px;
-            font-size: 1rem;
+            background-color: #ffd700;
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .button:hover {
-            background-color: #e65a50;
+            background-color: #ffca28;
+            transform: scale(1.1);
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
+        }
+
+        .feature-card {
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 250px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            animation: fadeInUp 1s ease-in-out;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
         }
 
         footer {
-            position: absolute;
-            bottom: 10px;
+            padding: 20px;
             text-align: center;
-            font-size: 0.8rem;
-            color: #999;
+            background: rgba(0, 0, 0, 0.5);
+            width: 100%;
+            font-size: 0.9rem;
         }
 
-        a {
-            color: #ff6f61;
+        footer a {
+            color: #ffd700;
             text-decoration: none;
+            margin: 0 10px;
         }
 
-        a:hover {
+        footer a:hover {
             text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            p { font-size: 1rem; }
+            .hero-image { max-width: 150px; }
+            .feature-card { width: 100%; }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Fake Meme Coin</h1>
-        <p>Connect your Phantom Wallet and enjoy our features!</p>
+        <img src="https://via.placeholder.com/200?text=LilPepe" alt="LilPepe Logo" class="hero-image">
+        <h1 class="animate__animated animate__fadeIn">LilPepe Coin</h1>
+        <p class="animate__animated animate__fadeIn">Join the fun with LilPepe, the ultimate memecoin on Solana. Connect your Phantom Wallet!</p>
     </header>
+
     <div class="button-container">
-        <button id="connect-wallet" class="button">Connect Wallet</button>
+        <button id="connect-wallet" class="button animate__animated animate__pulse animate__infinite">Connect Wallet</button>
     </div>
+
+    <section class="features">
+        <div class="feature-card">
+            <h3>Fast Transactions</h3>
+            <p>Experience lightning-fast transactions on the Solana blockchain.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Community Driven</h3>
+            <p>Join a vibrant community of Pepe enthusiasts!</p>
+        </div>
+        <div class="feature-card">
+            <h3>Secure Wallet</h3>
+            <p>Connect securely with Phantom Wallet.</p>
+        </div>
+    </section>
+
     <footer>
-        <p>© 2024 Fake. All rights reserved.</p>
-        <p><a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+        <p>© 2025 LilPepe. All rights reserved.</p>
+        <p>
+            <a href="/privacy">Privacy Policy</a> |
+            <a href="/terms">Terms of Service</a> |
+            <a href="https://twitter.com/LilPepeCoin">Twitter</a> |
+            <a href="https://discord.gg/LilPepe">Discord</a>
+        </p>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="scripts/scripts.js"></script>
+    <script>
+        // Basic Phantom Wallet connection logic (unchanged)
+        $(document).ready(function() {
+            $('#connect-wallet').click(async function() {
+                if (window.solana && window.solana.isPhantom) {
+                    try {
+                        await window.solana.connect();
+                        alert('Connected to Phantom Wallet!');
+                    } catch (err) {
+                        console.error('Connection failed:', err);
+                        alert('Failed to connect to Phantom Wallet.');
+                    }
+                } else {
+                    alert('Phantom Wallet not detected. Please install it.');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
