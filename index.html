@@ -7,7 +7,7 @@
     <title>LilPepe Airdrop</title>
     <meta name="description" content="Claim your LilPepe airdrop on Solana! Connect your Phantom Wallet and join the Pepe revolution.">
     <meta name="keywords" content="LilPepe, airdrop, memecoin, cryptocurrency, Solana, Phantom Wallet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" rel="preload" as="style">
     <style>
         * {
             margin: 0;
@@ -39,6 +39,7 @@
             color: #ffd700;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             margin-bottom: 10px;
+            animation: fadeInDown 1s ease-in-out;
         }
 
         p {
@@ -48,6 +49,7 @@
             max-width: 600px;
             margin: 0 auto;
             line-height: 1.6;
+            animation: fadeInDown 1s ease-in-out;
         }
 
         .hero-image {
@@ -76,6 +78,7 @@
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
         }
 
         .button:hover {
@@ -102,6 +105,7 @@
             width: 250px;
             box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease;
+            animation: fadeInUp 1s ease-in-out;
         }
 
         .feature-card:hover {
@@ -203,26 +207,26 @@
     </style>
 </head>
 <body>
-    <header class="animate__animated animate__fadeInDown">
-        <img src="images/lilpepe.png" alt="LilPepe Logo" class="hero-image" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=LilPepe'">
+    <header>
+        <img src="images/lilpepe.png" alt="LilPepe Logo" class="hero-image" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=LilPepe'; console.error('Failed to load lilpepe.png');">
         <h1>LilPepe Airdrop</h1>
         <p>Claim your free LilPepe tokens on Solana! Connect your Phantom Wallet to join the revolution.</p>
     </header>
 
     <div class="button-container">
-        <button id="connect-wallet" class="button animate__animated animate__pulse animate__infinite">Connect Wallet</button>
+        <button id="connect-wallet" class="button" onclick="console.log('Connect Wallet button clicked');">Connect Wallet</button>
     </div>
 
     <section class="features">
-        <div class="feature-card animate__animated animate__fadeInUp">
+        <div class="feature-card">
             <h3>Fast Airdrop</h3>
             <p>Claim your LilPepe tokens instantly on Solana’s high-speed blockchain.</p>
         </div>
-        <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+        <div class="feature-card">
             <h3>Pepe Community</h3>
             <p>Join thousands of Pepe fans in the LilPepe movement!</p>
         </div>
-        <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+        <div class="feature-card">
             <h3>Secure Claim</h3>
             <p>Connect safely with Phantom Wallet to claim your airdrop.</p>
         </div>
@@ -240,8 +244,8 @@
 
     <div id="notification" class="notification"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-    <script src="scripts/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" onerror="console.error('Failed to load jQuery');"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js" onerror="console.error('Failed to load Solana Web3.js');"></script>
+    <script src="scripts/scripts.js" onerror="console.error('Failed to load scripts.js');"></script>
 </body>
 </html>
