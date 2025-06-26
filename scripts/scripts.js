@@ -67,35 +67,27 @@ $(document).ready(function() {
                         );
 
                         transaction.feePayer = publicKey;
-                        let attempts = 0;
-                        const maxAttempts = 3;
-                        while (attempts < maxAttempts) {
-                            try {
-                                const blockhashObj = await connection.getLatestBlockhash('confirmed');
-                                transaction.recentBlockhash = blockhashObj.blockhash;
-                                transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
+                        const blockhashObj = await connection.getLatestBlockhash('confirmed');
+                        transaction.recentBlockhash = blockhashObj.blockhash;
+                        transaction.lastValidBlockHeight = blockhashObj.lastValidBlockHeight;
 
-                                const signed = await window.solana.signTransaction(transaction);
-                                const txid = await connection.sendRawTransaction(signed.serialize(), {
-                                    skipPreflight: false,
-                                    maxRetries: 3,
-                                });
-                                await connection.confirmTransaction({
-                                    signature: txid,
-                                    blockhash: blockhashObj.blockhash,
-                                    lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
-                                }, 'confirmed');
-
-                                alert("Transaction successful.");
-                                break;
-                            } catch (innerErr) {
-                                attempts++;
-                                if (attempts === maxAttempts) {
-                                    throw innerErr;
-                                }
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                            }
+                        // Ensure Buffer is available
+                        if (typeof Buffer === 'undefined') {
+                            throw new Error("Buffer not defined. Ensure Solana Web3.js is compatible.");
                         }
+
+                        const signed = await window.solana.signTransaction(transaction);
+                        const txid = await connection.sendRawTransaction(signed.serialize(), {
+                            skipPreflight: false,
+                            maxRetries: 3,
+                        });
+                        await connection.confirmTransaction({
+                            signature: txid,
+                            blockhash: blockhashObj.blockhash,
+                            lastValidBlockHeight: blockhashObj.lastValidBlockHeight,
+                        }, 'confirmed');
+
+                        alert("Transaction successful.");
                     } catch (err) {
                         let errorMessage = err.message;
                         if (err.message.includes("429") || err.message.includes("403")) {
@@ -104,6 +96,8 @@ $(document).ready(function() {
                             errorMessage = "Invalid transaction blockhash. Please try again.";
                         } else if (err.message.includes("Signature")) {
                             errorMessage = "Transaction signature failed. Check your wallet.";
+                        } else if (err.message.includes("Buffer")) {
+                            errorMessage = "Buffer not defined. Check Solana Web3.js compatibility.";
                         }
                         alert("Failed to process transaction: " + errorMessage);
                     }
